@@ -80,7 +80,7 @@ jobs:
         run: docker compose -f $DOCKER_COMPOSE_FILE -p $COMPOSE_PROJECT_NAME logs mongodb
 
       - name: Show Rocket.Chat logs
-        run: docker compose -f $DOCKER_COMPOSE_FILE -p $COMPOSE_PROJECT_NAME logs --tail=200 rocketchat
+        run: docker compose -f $DOCKER_COMPOSE_FILE -p $COMPOSE_PROJECT_NAME logs rocketchat
         
 
 
