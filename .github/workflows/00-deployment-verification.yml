@@ -49,14 +49,42 @@ jobs:
             sleep 10; \
           done'
 
+      # - name: Wait for the Traefik dashboard to be ready
+      #   run: |
+      #     echo "Checking the routing and availability of the Traefik dashboard..."
+      #     timeout 5m bash -c 'while ! curl -fsSLk --write-out "%{http_code}" --output /dev/null "https://$APP_TRAEFIK_HOSTNAME" | grep -E "200|401"; do \
+      #       echo "Waiting for the application to be ready..."; \
+      #       sleep 10; \
+      #     done'
       - name: Wait for the Traefik dashboard to be ready
+        shell: bash
+        env:
+          TRAEFIK_URL: https://${{ env.APP_TRAEFIK_HOSTNAME }}
+          TIMEOUT: 5m
+          SLEEP: 10
         run: |
-          echo "Checking the routing and availability of the Traefik dashboard..."
-          timeout 5m bash -c 'while ! curl -fsSLk --write-out "%{http_code}" --output /dev/null "https://$APP_TRAEFIK_HOSTNAME" | grep -E "200|401"; do \
-            echo "Waiting for the application to be ready..."; \
-            sleep 10; \
-          done'
-
+          set -euo pipefail
+      
+          echo "Checking Traefik dashboard availability at: $TRAEFIK_URL"
+          echo "Timeout: $TIMEOUT, interval: ${SLEEP}s"
+      
+          timeout "$TIMEOUT" bash -c '
+            set -u
+      
+            while true; do
+              CODE="$(curl -sk -o /dev/null -w "%{http_code}" "$TRAEFIK_URL" || true)"
+              echo "HTTP status: ${CODE:-<empty>}"
+      
+              if [[ "$CODE" == "200" || "$CODE" == "401" ]]; then
+                echo "Traefik dashboard is reachable (status=$CODE)."
+                break
+              fi
+      
+              echo "Waiting for Traefik dashboard..."
+              sleep "'"$SLEEP"'"
+            done
+          '
+      
       - name: Inspect Network Configuration
         run: |
           docker network inspect $NETWORK_ONE
