@@ -73,15 +73,16 @@ jobs:
           docker network inspect $NETWORK_ONE
           docker network inspect $NETWORK_TWO
 
-      - name: Show mongodb logs
-        run: docker compose -f $DOCKER_COMPOSE_FILE -p $COMPOSE_PROJECT_NAME logs --tail=200 mongodb
+      - name: Show mongodb version
+        run: docker compose -f $DOCKER_COMPOSE_FILE -p $COMPOSE_PROJECT_NAME exec mongodb mongod --version
 
-      - name: Show Rocket.Chat logs on failure
+      - name: Show Mongodb logs
+        run: docker compose -f $DOCKER_COMPOSE_FILE -p $COMPOSE_PROJECT_NAME logs mongodb
+
+      - name: Show Rocket.Chat logs
         run: docker compose -f $DOCKER_COMPOSE_FILE -p $COMPOSE_PROJECT_NAME logs --tail=200 rocketchat
         
 
-      - name: Show mongodb version
-        run: docker compose -f $DOCKER_COMPOSE_FILE -p $COMPOSE_PROJECT_NAME exec mongodb mongod --version
 
       - name: Shutdown Docker Compose services
         if: always()
