@@ -69,8 +69,9 @@ jobs:
           echo "Checking Traefik dashboard availability at: $TRAEFIK_URL"
           echo "Timeout: $TIMEOUT, interval: ${SLEEP}s"
       
-          if timeout "$TIMEOUT" bash -c '
-            set -u
+          if timeout "$TIMEOUT" bash -lc '
+            set -euo pipefail
+      
             while true; do
               CODE="$(curl -sk -o /dev/null -w "%{http_code}" "$TRAEFIK_URL" || true)"
               echo "HTTP status: ${CODE:-<empty>}"
@@ -81,7 +82,7 @@ jobs:
               fi
       
               echo "Waiting for Traefik dashboard..."
-              sleep "'"$SLEEP"'"
+              sleep "$SLEEP"
             done
           '; then
             echo "Traefik ready within timeout."
