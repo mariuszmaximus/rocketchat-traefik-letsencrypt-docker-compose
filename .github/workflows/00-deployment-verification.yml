@@ -91,9 +91,17 @@ jobs:
           docker network inspect $NETWORK_ONE
           docker network inspect $NETWORK_TWO
 
-      - name: Show container logs on failure
-        if: failure()
-        run: docker compose -f $DOCKER_COMPOSE_FILE -p $COMPOSE_PROJECT_NAME logs
+      # - name: Show container logs on failure
+      #   run: docker compose -f $DOCKER_COMPOSE_FILE -p $COMPOSE_PROJECT_NAME logs
+        
+      # - name: Show last logs
+      #   if: failure()
+      #   run: docker compose -f $DOCKER_COMPOSE_FILE -p $COMPOSE_PROJECT_NAME logs --tail=200
+      - name: Show Rocket.Chat logs on failure
+        run: docker compose -f $DOCKER_COMPOSE_FILE -p $COMPOSE_PROJECT_NAME logs --tail=200 rocketchat
+        
+      - name: Show mongodb logs
+        run: docker compose -f $DOCKER_COMPOSE_FILE -p $COMPOSE_PROJECT_NAME logs --tail=200 mongodb
 
       - name: Shutdown Docker Compose services
         if: always()
