@@ -57,39 +57,59 @@ jobs:
       #       echo "Waiting for the application to be ready..."; \
       #       sleep 10; \
       #     done'
-      - name: Wait for the Traefik dashboard to be ready
+      # - name: Wait for the Traefik dashboard to be ready
+      #   shell: bash
+      #   env:
+      #     TRAEFIK_URL: https://${{ env.APP_TRAEFIK_HOSTNAME }}
+      #     TIMEOUT: 1m
+      #     SLEEP: 10
+      #   run: |
+      #     set -euo pipefail
+      
+      #     echo "Checking Traefik dashboard availability at: $TRAEFIK_URL"
+      #     echo "Timeout: $TIMEOUT, interval: ${SLEEP}s"
+      
+      #     if timeout "$TIMEOUT" bash -lc '
+      #       set -euo pipefail
+      
+      #       while true; do
+      #         CODE="$(curl -sk -o /dev/null -w "%{http_code}" "$TRAEFIK_URL" || true)"
+      #         echo "HTTP status: ${CODE:-<empty>}"
+      
+      #         if [[ "$CODE" == "200" || "$CODE" == "401" ]]; then
+      #           echo "Traefik dashboard is reachable (status=$CODE)."
+      #           exit 0
+      #         fi
+      
+      #         echo "Waiting for Traefik dashboard..."
+      #         sleep "$SLEEP"
+      #       done
+      #     '; then
+      #       echo "Traefik ready within timeout."
+      #     else
+      #       echo "⚠️ Traefik NOT ready within timeout — continuing."
+      #       exit 0
+      #     fi
+      - name: Wait (simple sleep loop, always success)
         shell: bash
         env:
-          TRAEFIK_URL: https://${{ env.APP_TRAEFIK_HOSTNAME }}
-          TIMEOUT: 1m
+          WAIT_SECONDS: 60
           SLEEP: 10
         run: |
-          set -euo pipefail
+          set -u
       
-          echo "Checking Traefik dashboard availability at: $TRAEFIK_URL"
-          echo "Timeout: $TIMEOUT, interval: ${SLEEP}s"
+          echo "Waiting ${WAIT_SECONDS}s (sleep every ${SLEEP}s)..."
       
-          if timeout "$TIMEOUT" bash -lc '
-            set -euo pipefail
+          ELAPSED=0
+          while [ "$ELAPSED" -lt "$WAIT_SECONDS" ]; do
+            echo "Sleeping... (${ELAPSED}/${WAIT_SECONDS}s)"
+            sleep "$SLEEP"
+            ELAPSED=$((ELAPSED + SLEEP))
+          done
       
-            while true; do
-              CODE="$(curl -sk -o /dev/null -w "%{http_code}" "$TRAEFIK_URL" || true)"
-              echo "HTTP status: ${CODE:-<empty>}"
-      
-              if [[ "$CODE" == "200" || "$CODE" == "401" ]]; then
-                echo "Traefik dashboard is reachable (status=$CODE)."
-                exit 0
-              fi
-      
-              echo "Waiting for Traefik dashboard..."
-              sleep "$SLEEP"
-            done
-          '; then
-            echo "Traefik ready within timeout."
-          else
-            echo "⚠️ Traefik NOT ready within timeout — continuing."
-            exit 0
-          fi
+          echo "Wait finished — continuing."
+          exit 0
+
       
       - name: Inspect Network Configuration
         run: |
