@@ -42,6 +42,13 @@ jobs:
       - name: Print Docker Compose services status
         run: docker ps
 
+      - name: Check if .env exists
+        run: |
+          pwd
+          ls -la
+          test -f .env && echo ".env exists" || echo ".env missing"
+
+
       # - name: Wait for the application to be ready via Traefik
       #   run: |
       #     echo "Checking the routing and availability of the application via Traefik..."
